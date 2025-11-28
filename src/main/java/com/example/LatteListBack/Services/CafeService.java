@@ -2,12 +2,11 @@ package com.example.LatteListBack.Services;
 
 import com.example.LatteListBack.DTOs.CoffeDTOs.CafeFactory;
 import com.example.LatteListBack.DTOs.CoffeDTOs.CafeListDTO;
-import com.example.LatteListBack.DTOs.CoffeDTOs.CafeMapper;
+import com.example.LatteListBack.Mappers.CafeMapper;
 import com.example.LatteListBack.Models.Cafe;
 import com.example.LatteListBack.Models.Review;
 import com.example.LatteListBack.Repositorys.CafeRepository;
 import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
