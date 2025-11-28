@@ -2,18 +2,12 @@ package com.example.LatteListBack.Models;
 
 import com.example.LatteListBack.Enums.TipoReaccion;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Entity
 @Table(
         name = "likes_review",
         uniqueConstraints = @UniqueConstraint(columnNames = {"usuario_id", "review_id"})
 )
-@Getter
-@Setter
-@NoArgsConstructor
 public class LikeReview {
 
     @Id
@@ -31,4 +25,35 @@ public class LikeReview {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private TipoReaccion tipo;
+
+    public LikeReview() {
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public Usuario getUsuario() {
+        return usuario;
+    }
+
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
+    }
+
+    public Review getReview() {
+        return review;
+    }
+
+    public void setReview(Review review) {
+        this.review = review;
+    }
+
+    public TipoReaccion getTipo() {
+        return tipo;
+    }
+
+    public void setTipo(TipoReaccion tipo) {
+        this.tipo = tipo;
+    }
 }

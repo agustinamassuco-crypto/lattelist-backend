@@ -3,22 +3,19 @@ package com.example.LatteListBack.Models;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.Setter;
+
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-@Getter
-@Setter
+
 @Entity
 @Table(name = "listas")
 public class ListaDeCafes {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Setter(AccessLevel.NONE)
     private Long id;
 
     @Column(nullable = false)
@@ -40,10 +37,57 @@ public class ListaDeCafes {
 
     private LocalDate fecha ;
 
+    public ListaDeCafes() {
+    }
+
     @PrePersist
     protected void onCreate() {
         this.fecha = LocalDate.now();
     }
 
 
+    public Long getId() {
+        return id;
+    }
+
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
+    public Usuario getUsuario() {
+        return usuario;
+    }
+
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
+    }
+
+    public List<Long> getIdCafes() {
+        return idCafes;
+    }
+
+    public void setIdCafes(List<Long> idCafes) {
+        this.idCafes = idCafes;
+    }
+
+    public List<Long> getIdCafesVisitados() {
+        return idCafesVisitados;
+    }
+
+    public void setIdCafesVisitados(List<Long> idCafesVisitados) {
+        this.idCafesVisitados = idCafesVisitados;
+    }
+
+    public LocalDate getFecha() {
+        return fecha;
+    }
+
+    public void setFecha(LocalDate fecha) {
+        this.fecha = fecha;
+    }
 }

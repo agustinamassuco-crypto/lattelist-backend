@@ -5,25 +5,19 @@ import com.example.LatteListBack.Enums.EstadoReview;
 import com.example.LatteListBack.Enums.Etiquetas;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-@Getter
-@Setter
-@NoArgsConstructor
+
+
 @Entity
 @Table(name = "reviews")
 public class Review {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Setter(AccessLevel.NONE)
     private Long id;
 
     @Column(nullable = false)
@@ -32,7 +26,6 @@ public class Review {
     @Column(nullable = false)
     private String comentario;
 
-    // Fecha autogenerada
     private LocalDate fecha;
 
     @Enumerated(EnumType.STRING)
@@ -60,8 +53,80 @@ public class Review {
     @JsonBackReference
     private Cafe cafe;
 
+    public Review() {
+    }
+
     @PrePersist
     protected void onCreate() {
         this.fecha = LocalDate.now();
+    }
+
+    public CostoPromedio getCostoPromedio() {
+        return costoPromedio;
+    }
+
+    public void setCostoPromedio(CostoPromedio costoPromedio) {
+        this.costoPromedio = costoPromedio;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+
+    public Integer getPuntuacion() {
+        return puntuacion;
+    }
+
+    public void setPuntuacion(Integer puntuacion) {
+        this.puntuacion = puntuacion;
+    }
+
+    public String getComentario() {
+        return comentario;
+    }
+
+    public void setComentario(String comentario) {
+        this.comentario = comentario;
+    }
+
+    public LocalDate getFecha() {
+        return fecha;
+    }
+
+    public void setFecha(LocalDate fecha) {
+        this.fecha = fecha;
+    }
+
+    public List<Etiquetas> getEtiquetas() {
+        return etiquetas;
+    }
+
+    public void setEtiquetas(List<Etiquetas> etiquetas) {
+        this.etiquetas = etiquetas;
+    }
+
+    public EstadoReview getEstado() {
+        return estado;
+    }
+
+    public void setEstado(EstadoReview estado) {
+        this.estado = estado;
+    }
+
+    public Usuario getUsuario() {
+        return usuario;
+    }
+
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
+    }
+
+    public Cafe getCafe() {
+        return cafe;
+    }
+
+    public void setCafe(Cafe cafe) {
+        this.cafe = cafe;
     }
 }
