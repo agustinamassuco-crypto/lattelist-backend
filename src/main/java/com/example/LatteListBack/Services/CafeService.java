@@ -56,19 +56,14 @@ public class CafeService {
         }
 
 
-        @Transactional
-        public List<CafeListDTO> listarCafes() {
+    @Transactional
+    public List<CafeListDTO> listarCafes() {
 
-            List<Cafe> cafesDB = repo.findAll();
-
-            repo.saveAll(cafesDB);
-
-            return cafesDB.stream()
-                    .map(CafeFactory::toListDTO)
-                    .toList();
-
-        }
-
+        return repo.findAll()
+                .stream()
+                .map(CafeFactory::toListDTO)
+                .toList();
+    }
 
     }
 

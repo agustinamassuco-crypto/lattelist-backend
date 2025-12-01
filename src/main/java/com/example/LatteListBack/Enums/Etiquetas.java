@@ -1,5 +1,7 @@
 package com.example.LatteListBack.Enums;
 
+
+//no olvidar de hacer el endpoint para etiquetas
 public enum Etiquetas {
 
     BRUNCH("Brunch"),
