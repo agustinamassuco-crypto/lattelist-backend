@@ -10,6 +10,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class CafeService {
@@ -27,44 +28,72 @@ public class CafeService {
     }
 
 
-       @Transactional
-        public List<Cafe> actualizarCafesDesdeApi() {
+    @Transactional
+    public List<Cafe> actualizarCafesDesdeApi() {
 
-            List<Cafe> cafesApi = geoapifyService.obtenerCafesMdp();
-            List<Cafe> cafesAGuardar = new ArrayList<>();
+        List<Cafe> cafesApi = geoapifyService.obtenerCafesMdp();
+        List<Cafe> cafesAGuardar = new ArrayList<>();
 
-            for (Cafe cafeApi : cafesApi) {
+        for (Cafe cafeApi : cafesApi) {
 
-                Optional<Cafe> existenteOpt = repo.findByOsmId(cafeApi.getOsmId());
+            Optional<Cafe> existenteOpt = repo.findByOsmId(cafeApi.getOsmId());
 
-                if (existenteOpt.isPresent()) {
-                    Cafe cafeDB = existenteOpt.get();
+            if (existenteOpt.isPresent()) {
+                Cafe cafeDB = existenteOpt.get();
 
-                    cafeMapper.copiarDatosDesdeApi(cafeDB, cafeApi);
+                cafeMapper.copiarDatosDesdeApi(cafeDB, cafeApi);
 
-                    ratingService.calcular(cafeDB);
+                ratingService.calcular(cafeDB);
 
-                    cafesAGuardar.add(cafeDB);
+                cafesAGuardar.add(cafeDB);
 
-                } else {
-                    cafeApi.setResenas(new HashSet<Review>());
-                    cafesAGuardar.add(cafeApi);
-                }
+            } else {
+                cafeApi.setResenas(new HashSet<Review>());
+                cafesAGuardar.add(cafeApi);
             }
-
-            return repo.saveAll(cafesAGuardar);
         }
+
+        return repo.saveAll(cafesAGuardar);
+    }
 
 
     @Transactional
-    public List<CafeListDTO> listarCafes() {
+    public List<CafeListDTO> listarCafes(
+            //  filtro del frontend
+            Boolean delivery,
+            Boolean takeaway,
+            Boolean internet_access,
+            Boolean outdoor_seating,
+            Boolean abiertoAhora) {
 
-        return repo.findAll()
-                .stream()
+        List<Cafe> todosLosCafes = repo.findAll();
+
+        return todosLosCafes.stream()
+
+                .filter(c -> delivery == null || !delivery || (c.getDelivery() != null && c.getDelivery()))
+
+                // Filtro 2: Takeaway
+                .filter(c -> takeaway == null || !takeaway || (c.getTakeaway() != null && c.getTakeaway()))
+
+                // Filtro 3: Internet Access (Robustecido)
+                .filter(c -> internet_access == null || !internet_access || (c.getInternetAccess() != null && c.getInternetAccess()))
+
+                // Filtro 4: Outdoor Seating (Robustecido)
+                .filter(c -> outdoor_seating == null || !outdoor_seating || (c.getOutdoorSeating() != null && c.getOutdoorSeating()))
+
+                // Filtro 5: Abierto Ahora (Robustecido)
+                .filter(c -> abiertoAhora == null || !abiertoAhora || estaAbiertoAhora(c))
+
+                // 3. Mapear y recolectar el resultado
                 .map(CafeFactory::toListDTO)
-                .toList();
+                .collect(Collectors.toList());
     }
 
+
+    private boolean estaAbiertoAhora(Cafe cafe) {
+        /*hay que hacerloooooooooo no anda jaja*/
+
+
+        return cafe.getDelivery() != null && cafe.getDelivery();
     }
-
-
+}
