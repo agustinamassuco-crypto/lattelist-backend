@@ -14,11 +14,19 @@ public class LatteListBackApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(LatteListBackApplication.class, args);
 	}
+	@Bean
+	public CommandLineRunner init(CafeService cafeService) {
+		return args -> {
+			System.out.println("... Iniciando verificación de sincronización al arrancar la app ...");
+			cafeService.actualizarCafesDesdeApi();
+		};
+	}
+}
 
 
-	@Autowired
+/*
+@Autowired
 	private CafeService cafeService;
-
 	@Bean
 	public CommandLineRunner initData() {
 		return args -> {
@@ -26,13 +34,14 @@ public class LatteListBackApplication {
 			try {
 				cafeService.actualizarCafesDesdeApi();
 				System.out.println("--- ACTUALIZACIÓN COMPLETADA. ---");
+
 			} catch (Exception e) {
 				System.err.println("--- ERROR AL ACTUALIZAR CAFÉS DESDE API: " + e.getMessage() + " ---");
 				e.printStackTrace();
 			}
 		};
-	}
-}
+	}*/
+
 
 /*<dependency>
 			<groupId>org.springframework.boot</groupId>

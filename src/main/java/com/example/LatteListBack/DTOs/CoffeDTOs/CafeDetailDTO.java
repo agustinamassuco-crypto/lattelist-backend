@@ -18,7 +18,7 @@ public record CafeDetailDTO(
         String website,
 
         String cuisine,
-        String opening_hours,
+        String openingHours,
 
         Boolean takeaway,
         Boolean delivery,
