@@ -45,10 +45,8 @@ public class CafeService {
 
         LocalDateTime ahora = LocalDateTime.now(ZoneId.of("America/Argentina/Buenos_Aires"));
 
-        // Verificar si pasó una semana completa (7 días)
         if (ultimaSync != null && ultimaSync.plusWeeks(1).isAfter(ahora)) {
             System.out.println("⚠️ Saltando Geoapify GET. Última sync: " + ultimaSync);
-            // Salimos si NO ha pasado una semana.
             return Collections.emptyList();
         }
 
@@ -104,7 +102,6 @@ public class CafeService {
                 .filter(c -> outdoor_seating == null || !outdoor_seating || Boolean.TRUE.equals(c.getOutdoorSeating()))
                 .filter(c -> abiertoAhora == null || !abiertoAhora || estaAbiertoAhora(c))
 
-                // ⭐ search term
                 .filter(c -> search == null || search.isBlank() ||
                         c.getNombre().toLowerCase().contains(search.toLowerCase()))
 
@@ -117,11 +114,7 @@ public class CafeService {
         Cafe cafe = repo.findById(id)
                 .orElseThrow(() ->
                         new RuntimeException("Café no encontrado con id: " + id));
-
-        // 👉 calcular métricas
         CafeMetrics metrics = ratingService.calcular(cafe);
-
-        // 👉 pasar café + métricas al factory
         return CafeFactory.toDetailDTO(cafe, metrics);
     }
 
@@ -131,7 +124,7 @@ public class CafeService {
             return false;
         }
 
-        // Argentina
+
         LocalDateTime ahora = LocalDateTime.now(ZoneId.of("America/Argentina/Buenos_Aires"));
         DayOfWeek hoy = ahora.getDayOfWeek();
         LocalTime horaActual = ahora.toLocalTime();
@@ -146,33 +139,27 @@ public class CafeService {
                 "Su", DayOfWeek.SUNDAY
         );
 
-        // Separar reglas: "Mo-Th,Su 07:00-23:00" | "Fr,Sa 07:00-01:00"
         String[] reglas = horario.split(";");
 
         for (String regla : reglas) {
             regla = regla.trim();
 
-            // separar días y rango de horas
             String[] partes = regla.split(" ");
             if (partes.length < 2) continue;
 
-            String bloqueDias = partes[0];   // "Mo-Th,Su"
-            String rangoHoras = partes[1];   // "07:00-23:00"
+            String bloqueDias = partes[0];
+            String rangoHoras = partes[1];
 
-            // separar múltiples bloques de días: "Mo-Th" y "Su"
             String[] grupos = bloqueDias.split(",");
 
-            // separar horas
             String[] horas = rangoHoras.split("-");
             if (horas.length != 2) continue;
             LocalTime abre = LocalTime.parse(horas[0]);
             LocalTime cierra = LocalTime.parse(horas[1]);
 
-            // Para cada grupo de días
             for (String g : grupos) {
                 g = g.trim();
 
-                // "Mo-Th"
                 List<DayOfWeek> diasValidos = new ArrayList<>();
 
                 if (g.contains("-")) {
@@ -187,21 +174,17 @@ public class CafeService {
                         iter = iter.plus(1);
                     }
                 }
-                // "Su"
                 else {
                     diasValidos.add(mapDias.get(g));
                 }
 
-                // verifica si hoy corresponde
                 if (!diasValidos.contains(hoy)) continue;
 
-                // caso normal: abre y cierra el mismo día
                 if (!cierra.isBefore(abre)) {
                     if (!horaActual.isBefore(abre) && !horaActual.isAfter(cierra)) {
                         return true;
                     }
                 }
-                // caso cierre después de medianoche: ejemplo 07:00-01:00
                 else {
                     if (!horaActual.isBefore(abre) || !horaActual.isAfter(cierra)) {
                         return true;

@@ -11,8 +11,9 @@ public class CafeFactory {
         return new CafeListDTO(
                 c.getId(),
                 c.getNombre(),
-                c.getDireccion()
-
+                c.getDireccion(),
+                c.getLatitud(),
+                c.getLongitud()
         );
     }
 
