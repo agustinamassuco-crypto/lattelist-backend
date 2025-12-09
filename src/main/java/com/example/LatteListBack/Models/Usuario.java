@@ -3,13 +3,9 @@ package com.example.LatteListBack.Models;
 import com.example.LatteListBack.Enums.EstadoUsuario;
 import com.example.LatteListBack.Enums.TipoDeUsuario;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-//import org.springframework.security.core.GrantedAuthority;
-//import org.springframework.security.core.authority.SimpleGrantedAuthority;
-//import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -18,11 +14,10 @@ import java.util.List;
 @Entity
 @Table(name = "usuarios")
 
-public class Usuario /*implements UserDetails*/ {
+public class Usuario implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Setter(AccessLevel.NONE)
     private Long id;
 
     @Column(nullable = false)
@@ -57,8 +52,7 @@ public class Usuario /*implements UserDetails*/ {
     public Usuario() {
     }
 
-    //Comentado por el momento!
-    /* @Override
+    @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority(tipoDeUsuario.name()));
     }
@@ -70,7 +64,7 @@ public class Usuario /*implements UserDetails*/ {
     @Override public boolean isCredentialsNonExpired() { return true; }
     @Override public boolean isEnabled() {
         return this.estado == EstadoUsuario.ACTIVO;
-    }*/
+    }
 
     public Long getId() {
         return id;
@@ -93,20 +87,13 @@ public class Usuario /*implements UserDetails*/ {
         this.apellido = apellido;
     }
 
-    public String getEmail() {
-        return email;
+
+    public EstadoUsuario getEstado() {
+        return estado;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
+    public void setEstado(EstadoUsuario estado) {
+        this.estado = estado;
     }
 
     public TipoDeUsuario getTipoDeUsuario() {

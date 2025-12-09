@@ -7,7 +7,6 @@ import com.example.LatteListBack.Models.Cafe;
 import com.example.LatteListBack.Models.Review;
 import com.example.LatteListBack.Repositorys.CafeRepository;
 import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
