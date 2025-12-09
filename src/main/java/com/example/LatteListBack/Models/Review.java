@@ -20,10 +20,8 @@ public class Review {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
     private Integer puntuacion;
 
-    @Column(nullable = false)
     private String comentario;
 
     private LocalDate fecha;
@@ -37,6 +35,10 @@ public class Review {
     @Column(name = "etiqueta")
     private List<Etiquetas> etiquetas = new ArrayList<>();
 
+     @ElementCollection
+    @CollectionTable(name = "review_fotos", joinColumns = @JoinColumn(name = "review_id"))
+    @Column(name = "foto", columnDefinition = "LONGTEXT")
+    private List<String> fotos = new ArrayList<>();
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private EstadoReview estado = EstadoReview.ACTIVA;
@@ -44,13 +46,11 @@ public class Review {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario_id", nullable = false)
-    @JsonBackReference
     private Usuario usuario;
 
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cafe_id", nullable = false)
-    @JsonBackReference
     private Cafe cafe;
 
     public Review() {

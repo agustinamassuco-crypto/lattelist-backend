@@ -1,4 +1,4 @@
-package com.example.LatteListBack.DTOs.CoffeDTOs;
+package com.example.LatteListBack.Mappers;
 
 import com.example.LatteListBack.Models.Cafe;
 import org.springframework.stereotype.Component;
