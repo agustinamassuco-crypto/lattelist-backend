@@ -3,8 +3,11 @@ package com.example.LatteListBack.Controllers;
 import com.example.LatteListBack.Config.JwtService;
 import com.example.LatteListBack.DTOs.AuthDTOs.AuthRequestDTO;
 import com.example.LatteListBack.DTOs.AuthDTOs.AuthResponseDTO;
+import com.example.LatteListBack.DTOs.UserDTOs.UsuarioFactory;
+import com.example.LatteListBack.DTOs.UserDTOs.UsuarioRegistroDTO;
 import com.example.LatteListBack.Models.Usuario;
-import com.example.LatteListBack.Repositorys.UserRepository; // OJO CON EL PAQUETE
+import com.example.LatteListBack.Repositorys.UserRepository;
+import com.example.LatteListBack.Services.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -17,11 +20,24 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
     private final UserRepository userRepository;
+    private final UserService userService;
 
-    public AuthController(AuthenticationManager authenticationManager, JwtService jwtService, UserRepository userRepository) {
+    public AuthController(AuthenticationManager authenticationManager, JwtService jwtService, UserRepository userRepository, UserService userService) {
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
         this.userRepository = userRepository;
+        this.userService = userService;
+    }
+
+
+    @PostMapping("/register")
+    public ResponseEntity<AuthResponseDTO> register(@RequestBody UsuarioRegistroDTO request) {
+        return ResponseEntity.ok(userService.registrarUsuarioCliente(request));
+    }
+
+    @GetMapping("/check-email")
+    public ResponseEntity<Boolean> checkEmail(@RequestParam String email) {
+        return ResponseEntity.ok(userService.existeEmail(email));
     }
 
     @PostMapping("/login")
@@ -35,17 +51,7 @@ public class AuthController {
 
         String jwtToken = jwtService.generateToken(user);
 
-        AuthResponseDTO response = new AuthResponseDTO(
-                jwtToken,
-                user.getId(),
-                user.getNombre(),
-                user.getApellido(),
-                user.getUsername(),
-                user.getTipoDeUsuario(),
-                user.getFotoPerfil(),
-                user.getEstado().name()
-        );
-
+        AuthResponseDTO response = UsuarioFactory.toAuthResponse(user, jwtToken);
         return ResponseEntity.ok(response);
     }
 }

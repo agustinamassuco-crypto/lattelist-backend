@@ -35,7 +35,8 @@ public class Usuario implements UserDetails {
     @Enumerated(EnumType.STRING)
     private TipoDeUsuario tipoDeUsuario;
 
-
+    @Lob
+    @Column(name = "foto_perfil", columnDefinition = "LONGTEXT")
     private String fotoPerfil;
 
     @Enumerated(EnumType.STRING)
@@ -126,6 +127,18 @@ public class Usuario implements UserDetails {
 
     public void setResenas(List<Review> resenas) {
         this.resenas = resenas;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 }
 
