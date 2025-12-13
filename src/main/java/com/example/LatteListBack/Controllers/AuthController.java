@@ -3,6 +3,7 @@ package com.example.LatteListBack.Controllers;
 import com.example.LatteListBack.Config.JwtService;
 import com.example.LatteListBack.DTOs.AuthDTOs.AuthRequestDTO;
 import com.example.LatteListBack.DTOs.AuthDTOs.AuthResponseDTO;
+import com.example.LatteListBack.DTOs.AuthDTOs.ResetPasswordDTO;
 import com.example.LatteListBack.DTOs.UserDTOs.UsuarioFactory;
 import com.example.LatteListBack.DTOs.UserDTOs.UsuarioRegistroDTO;
 import com.example.LatteListBack.Models.Usuario;
@@ -53,5 +54,17 @@ public class AuthController {
 
         AuthResponseDTO response = UsuarioFactory.toAuthResponse(user, jwtToken);
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<Void> forgotPassword(@RequestParam String email) {
+        userService.solicitarRecuperacion(email);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<Void> resetPassword(@RequestBody ResetPasswordDTO req) {
+        userService.cambiarClaveConToken(req.token(), req.newPassword());
+        return ResponseEntity.ok().build();
     }
 }

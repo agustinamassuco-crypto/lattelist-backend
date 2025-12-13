@@ -20,11 +20,13 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final EmailService emailService;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService, EmailService emailService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
+        this.emailService = emailService;
     }
 
     public AuthResponseDTO registrarUsuarioCliente(UsuarioRegistroDTO request) {
@@ -51,6 +53,7 @@ public class UserService {
         u.getListasDeCafes().add(favoritos);
 
         Usuario guardado = userRepository.save(u);
+        emailService.enviarCorreoBienvenida(guardado.getEmail(), guardado.getNombre());
         String token = jwtService.generateToken(guardado);
 
         return UsuarioFactory.toAuthResponse(guardado, token);
@@ -115,6 +118,27 @@ public class UserService {
                 TipoDeUsuario.ADMIN,
                 EstadoUsuario.ACTIVO
         );
+    }
+
+    public void solicitarRecuperacion(String email) {
+        userRepository.findByEmail(email).ifPresent(u -> {
+            String token = jwtService.generateToken(u);
+
+            emailService.enviarCorreoRecuperacion(email, token);
+        });
+    }
+
+    public void cambiarClaveConToken(String token, String nuevaPassword) {
+        String email = jwtService.extractUsername(token);
+        Usuario u = userRepository.findByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
+
+        if (!jwtService.isTokenValid(token, u)) {
+            throw new IllegalArgumentException("Token inválido o expirado");
+        }
+
+        u.setPassword(passwordEncoder.encode(nuevaPassword));
+        userRepository.save(u);
     }
 
     /* a esto le falta
