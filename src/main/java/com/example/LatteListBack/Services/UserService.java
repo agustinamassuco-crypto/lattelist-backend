@@ -6,11 +6,11 @@ import com.example.LatteListBack.DTOs.UserDTOs.UsuarioListDTO;
 import com.example.LatteListBack.DTOs.UserDTOs.UsuarioRegistroDTO;
 import com.example.LatteListBack.Enums.EstadoUsuario;
 import com.example.LatteListBack.Enums.TipoDeUsuario;
-import com.example.LatteListBack.Models.ListaDeCafes;
 import com.example.LatteListBack.Models.Usuario;
 import com.example.LatteListBack.Repositorys.UserRepository;
 import com.example.LatteListBack.Config.JwtService;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -26,12 +26,14 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final EmailService emailService;
+    private final ListaDeCafesService listaService;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService, EmailService emailService) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService, EmailService emailService, @Lazy ListaDeCafesService listaService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.emailService = emailService;
+        this.listaService = listaService;
     }
 
     public AuthResponseDTO registrarUsuarioCliente(UsuarioRegistroDTO request) {
@@ -51,13 +53,9 @@ public class UserService {
 
         Usuario u = UsuarioFactory.createFromRegisterDTO(req, passwordEncoder, rol);
 
-        //pasarlo despues haciendo el metodo en list service
-        ListaDeCafes favoritos = new ListaDeCafes();
-        favoritos.setNombre("Favoritos");
-        favoritos.setUsuario(u);
-        u.getListasDeCafes().add(favoritos);
-
         Usuario guardado = userRepository.save(u);
+
+        listaService.crearListaFavoritos(guardado);
         emailService.enviarCorreoBienvenida(guardado.getEmail(), guardado.getNombre());
         String token = jwtService.generateToken(guardado);
 
