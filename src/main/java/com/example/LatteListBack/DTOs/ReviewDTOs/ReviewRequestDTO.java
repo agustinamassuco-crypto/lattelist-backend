@@ -6,7 +6,6 @@ import jakarta.validation.constraints.Size;
 
 import java.util.List;
 
-//El id se genera solo, la fecha se genera en el modelo, el estado //por defecto es ACTIVO en el modelo
 public class ReviewRequestDTO {
 
     @NotNull(message = "El ID del café es obligatorio")
@@ -29,6 +28,12 @@ public class ReviewRequestDTO {
     private List<String> etiquetas;
     @Size(max = 6, message = "Máximo 6 fotos")
     private List<String> fotos; // Base64 o URLs
+
+
+
+
+
+
 
     public ReviewRequestDTO() {
     }

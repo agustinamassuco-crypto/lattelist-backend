@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,10 +36,12 @@ public class Review {
     @Column(name = "etiqueta")
     private List<Etiquetas> etiquetas = new ArrayList<>();
 
-     @ElementCollection
+    @ElementCollection
     @CollectionTable(name = "review_fotos", joinColumns = @JoinColumn(name = "review_id"))
     @Column(name = "foto", columnDefinition = "LONGTEXT")
     private List<String> fotos = new ArrayList<>();
+
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private EstadoReview estado = EstadoReview.ACTIVA;
@@ -56,13 +59,20 @@ public class Review {
     public Review() {
     }
 
+
     @PrePersist
     protected void onCreate() {
-        this.fecha = LocalDate.now();
+        System.out.println("FECHA JAVA: " +
+                LocalDate.now(ZoneId.of("America/Argentina/Buenos_Aires")));
+        this.fecha = LocalDate.now(ZoneId.of("America/Argentina/Buenos_Aires"));
+        this.estado = EstadoReview.ACTIVA;
     }
+
+
 
     public CostoPromedio getCostoPromedio() {
         return costoPromedio;
+
     }
 
     public void setCostoPromedio(CostoPromedio costoPromedio) {
@@ -128,5 +138,17 @@ public class Review {
 
     public void setCafe(Cafe cafe) {
         this.cafe = cafe;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public List<String> getFotos() {
+        return fotos;
+    }
+
+    public void setFotos(List<String> fotos) {
+        this.fotos = fotos;
     }
 }

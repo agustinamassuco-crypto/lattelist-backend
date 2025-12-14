@@ -25,7 +25,7 @@ public record CafeDetailDTO(
         Boolean internet_access,
         Boolean outdoor_seating,
 
-        Integer puntuacion,
+        Double puntuacion,
         CostoPromedio costoPromedio,
         Set<Etiquetas> etiquetasTop3
 ) {}

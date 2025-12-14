@@ -18,14 +18,14 @@ public class CafeRatingService {
 
     public CafeMetrics calcular(Cafe cafe) {
 
-        Integer puntuacion = calcularPuntuacion(cafe);
+        Double puntuacion = calcularPuntuacion(cafe);
         CostoPromedio costo = calcularCosto(cafe);
         Set<Etiquetas> top = calcularEtiquetas(cafe);
 
         return new CafeMetrics(puntuacion, costo, top);
     }
 
-    private Integer calcularPuntuacion(Cafe cafe) {
+    private Double calcularPuntuacion(Cafe cafe) {
         List<Integer> puntuaciones = cafe.getResenas().stream()
                 .filter(r -> r.getEstado() == EstadoReview.ACTIVA)
                 .map(Review::getPuntuacion)
@@ -40,13 +40,18 @@ public class CafeRatingService {
                 .average()
                 .orElse(0);
 
-        return (int) Math.round(promedio);
+        return Math.round(promedio * 10.0) / 10.0;
     }
+
 
     private CostoPromedio calcularCosto(Cafe cafe) {
         return cafe.getResenas().stream()
+                .filter(r -> r.getEstado() == EstadoReview.ACTIVA)
                 .filter(r -> r.getCostoPromedio() != null)
-                .collect(Collectors.groupingBy(Review::getCostoPromedio, Collectors.counting()))
+                .collect(Collectors.groupingBy(
+                        Review::getCostoPromedio,
+                        Collectors.counting()
+                ))
                 .entrySet()
                 .stream()
                 .max(Map.Entry.comparingByValue())
@@ -54,11 +59,16 @@ public class CafeRatingService {
                 .orElse(null);
     }
 
+
     private Set<Etiquetas> calcularEtiquetas(Cafe cafe) {
 
         List<Etiquetas> top3 = cafe.getResenas().stream()
+                .filter(r -> r.getEstado() == EstadoReview.ACTIVA)
                 .flatMap(r -> r.getEtiquetas().stream())
-                .collect(Collectors.groupingBy(e -> e, Collectors.counting()))
+                .collect(Collectors.groupingBy(
+                        e -> e,
+                        Collectors.counting()
+                ))
                 .entrySet()
                 .stream()
                 .sorted(Map.Entry.<Etiquetas, Long>comparingByValue().reversed())
@@ -68,4 +78,5 @@ public class CafeRatingService {
 
         return Set.copyOf(top3);
     }
+
 }

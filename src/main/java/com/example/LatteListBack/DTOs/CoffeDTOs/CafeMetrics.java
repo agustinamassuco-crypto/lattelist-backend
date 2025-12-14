@@ -6,7 +6,7 @@ import com.example.LatteListBack.Enums.Etiquetas;
 import java.util.Set;
 
 public record CafeMetrics(
-        Integer puntuacion,
+        Double puntuacion,
         CostoPromedio costoPromedio,
         Set<Etiquetas> etiquetasTop3
 ) {}
