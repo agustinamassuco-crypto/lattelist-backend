@@ -6,5 +6,7 @@ public record UsuarioListDTO(Long id,
                              String nombre,
                              String apellido,
                              String email,
-                             TipoDeUsuario tipo) {
-}
+                             String tipoUser,
+                             String fotoPerfil,
+                             String estado
+) {}

@@ -2,6 +2,7 @@ package com.example.LatteListBack.Services;
 
 import com.example.LatteListBack.DTOs.AuthDTOs.AuthResponseDTO;
 import com.example.LatteListBack.DTOs.UserDTOs.UsuarioFactory;
+import com.example.LatteListBack.DTOs.UserDTOs.UsuarioListDTO;
 import com.example.LatteListBack.DTOs.UserDTOs.UsuarioRegistroDTO;
 import com.example.LatteListBack.Enums.EstadoUsuario;
 import com.example.LatteListBack.Enums.TipoDeUsuario;
@@ -13,6 +14,10 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -83,6 +88,17 @@ public class UserService {
         String token = jwtService.generateToken(actualizado);
 
         return UsuarioFactory.toAuthResponse(actualizado, token);
+    }
+
+    public List<UsuarioListDTO> obtenerTodosLosUsuarios() {
+        List<EstadoUsuario> estadosVisibles = Arrays.asList(
+                EstadoUsuario.ACTIVO,
+                EstadoUsuario.INACTIVO
+        );
+
+        return userRepository.findByEstadoIn(estadosVisibles).stream()
+                .map(UsuarioFactory::toListDTO)
+                .collect(Collectors.toList());
     }
 
   /*  public UsuarioCompletoDTO obtenerMiPerfil() {

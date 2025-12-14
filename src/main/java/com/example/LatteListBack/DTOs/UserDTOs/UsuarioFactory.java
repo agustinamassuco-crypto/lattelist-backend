@@ -44,7 +44,9 @@ public class UsuarioFactory {
                 u.getNombre(),
                 u.getApellido(),
                 u.getEmail(),
-                u.getTipoDeUsuario()
+                u.getTipoDeUsuario().name(),
+                u.getFotoPerfil(),
+                u.getEstado().name()
         );
     }
 
