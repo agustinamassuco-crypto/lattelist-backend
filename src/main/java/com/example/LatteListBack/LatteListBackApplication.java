@@ -5,22 +5,23 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.scheduling.annotation.EnableAsync;
 
-//Cuando este todo avanzado hay que sacar esto del miny aparte agregar de nuevo la dependencia de SpringSegurity en el pom
-//Esto es solo para pruebas
+
 @SpringBootApplication
+@EnableAsync
 public class LatteListBackApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(LatteListBackApplication.class, args);
 	}
-	@Bean
+/*	@Bean
 	public CommandLineRunner init(CafeService cafeService) {
 		return args -> {
 			System.out.println("... Iniciando verificación de sincronización al arrancar la app ...");
 			cafeService.actualizarCafesDesdeApi();
 		};
-	}
+	}*/
 }
 
 

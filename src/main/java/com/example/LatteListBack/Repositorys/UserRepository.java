@@ -13,6 +13,7 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<Usuario, Long> {
     Optional<Usuario> findByEmail(String email);
     long countByTipoDeUsuarioAndEstado(TipoDeUsuario tipo, EstadoUsuario estado);
+    List<Usuario> findByEstadoIn(List<EstadoUsuario> estados);
     List<Usuario> findByTipoDeUsuario(TipoDeUsuario tipoDeUsuario);;
     List<Usuario> findByNombre(String nombre);
     List<Usuario> findByApellido(String apellido);

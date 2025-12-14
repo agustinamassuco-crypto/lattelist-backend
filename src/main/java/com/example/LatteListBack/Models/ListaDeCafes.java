@@ -2,7 +2,6 @@ package com.example.LatteListBack.Models;
 
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
 
 
 import java.time.LocalDate;
