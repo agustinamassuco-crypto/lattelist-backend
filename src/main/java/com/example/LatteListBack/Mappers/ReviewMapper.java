@@ -64,13 +64,15 @@ public class ReviewMapper {
     public CostoPromedio mapCosto(String s) {
         if (s == null || s.isBlank()) return null;
 
-        return switch (s) {
-            case "$" -> CostoPromedio.BARATO;
-            case "$$" -> CostoPromedio.MEDIO;
-            case "$$$" -> CostoPromedio.CARO;
+        return switch (s.toUpperCase()) {
+            case "BARATO", "$" -> CostoPromedio.BARATO;
+            case "MEDIO", "$$" -> CostoPromedio.MEDIO;
+            case "CARO", "$$$" -> CostoPromedio.CARO;
             default -> throw new IllegalArgumentException("Costo inválido: " + s);
         };
     }
+
+
 
     public List<Etiquetas> mapEtiquetas(List<String> etiquetas) {
         if (etiquetas == null) return null;

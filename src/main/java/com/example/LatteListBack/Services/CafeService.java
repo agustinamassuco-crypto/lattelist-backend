@@ -105,7 +105,7 @@ public class CafeService {
                 .filter(c -> search == null || search.isBlank() ||
                         c.getNombre().toLowerCase().contains(search.toLowerCase()))
 
-                .map(CafeFactory::toListDTO)
+                .map(c -> CafeFactory.toListDTO(c, estaAbiertoAhora(c)))
                 .collect(Collectors.toList());
     }
 
@@ -115,7 +115,7 @@ public class CafeService {
                 .orElseThrow(() ->
                         new RuntimeException("Café no encontrado con id: " + id));
         CafeMetrics metrics = ratingService.calcular(cafe);
-        return CafeFactory.toDetailDTO(cafe, metrics);
+        return CafeFactory.toDetailDTO(cafe, metrics, estaAbiertoAhora(cafe));
     }
 
     private boolean estaAbiertoAhora(Cafe cafe) {
@@ -123,8 +123,6 @@ public class CafeService {
         if (horario == null || horario.isBlank()) {
             return false;
         }
-
-
         LocalDateTime ahora = LocalDateTime.now(ZoneId.of("America/Argentina/Buenos_Aires"));
         DayOfWeek hoy = ahora.getDayOfWeek();
         LocalTime horaActual = ahora.toLocalTime();
@@ -192,7 +190,6 @@ public class CafeService {
                 }
             }
         }
-
         return false;
     }
 }

@@ -60,17 +60,15 @@ public class ReviewController {
     ) {
         Long currentUserId = null;
 
-        // 🚨 LÓGICA PARA OBTENER EL ID DEL USUARIO 🚨
         if (principal != null) {
             String username = principal.getName();
 
-            // Buscar el ID del usuario en la base de datos usando el username/email (asumo que es único)
             currentUserId = userRepository.findByEmail(username) // 💡 Usa tu método de búsqueda por username/email
                     .map(user -> user.getId())
                     .orElse(null);
 
         }
-        return reviewService.getByCafeId(cafeId, incluirInactivas, currentUserId);
+        return reviewService.getByCafeId(cafeId);
     }
 
 

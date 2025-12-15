@@ -13,12 +13,20 @@ import java.util.List;
 public interface ReviewRepository extends JpaRepository<Review, Long> {
 
 
-    @Query("SELECT r FROM Review r WHERE r.cafe.id = :cafeId AND r.estado = :estado")
-    List<Review> findByCafeIdAndEstado(@Param("cafeId") Long cafeId, @Param("estado") EstadoReview estado);
-
     List<Review> findByUsuarioIdAndEstado(Long usuarioId, EstadoReview estado);
 
     List<Review> findByUsuarioIdAndEstadoIn(Long usuarioId, List<EstadoReview> estados);
 
     List<Review> findByCafeIdAndEstadoIn(Long cafeId, List<EstadoReview> estados);
+
+    @Query("SELECT r FROM Review r WHERE r.cafe.id = :cafeId " +
+            "AND r.estado = 'ACTIVA' " +
+            "AND r.usuario.estado = 'ACTIVO'")
+    List<Review> findReviewsVisiblesPorCafe(@Param("cafeId") Long cafeId);
+
+
+    @Query("SELECT r FROM Review r WHERE r.cafe.id = :cafeId " +
+            "AND r.estado IN ('ACTIVA', 'INACTIVA') " +
+            "ORDER BY r.fecha DESC")
+    List<Review> findReviewsParaAdmin(@Param("cafeId") Long cafeId);
 }

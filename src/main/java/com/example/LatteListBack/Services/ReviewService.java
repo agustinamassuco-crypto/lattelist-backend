@@ -2,9 +2,7 @@ package com.example.LatteListBack.Services;
 
 import com.example.LatteListBack.DTOs.ReviewDTOs.ReviewRequestDTO;
 import com.example.LatteListBack.DTOs.ReviewDTOs.ReviewResponseDTO;
-import com.example.LatteListBack.Enums.CostoPromedio;
-import com.example.LatteListBack.Enums.EstadoReview;
-import com.example.LatteListBack.Enums.TipoReaccion;
+import com.example.LatteListBack.Enums.*;
 import com.example.LatteListBack.Mappers.ReviewMapper;
 import com.example.LatteListBack.Models.Cafe;
 import com.example.LatteListBack.Models.LikeReview;
@@ -17,6 +15,7 @@ import com.example.LatteListBack.Repositorys.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -28,18 +27,21 @@ public class ReviewService {
     private final CafeRepository cafeRepository;
     private final LikeReviewRepository reaccionRepository;
     private final ReviewMapper reviewMapper;
+    private final UserService userService;
 
     public ReviewService(ReviewRepository reviewRepository,
                          UserRepository usuarioRepository,
                          CafeRepository cafeRepository,
                          LikeReviewRepository reaccionRepository,
-                         ReviewMapper reviewMapper) {
+                         ReviewMapper reviewMapper,
+                         UserService userService) {
 
         this.reviewRepository = reviewRepository;
         this.usuarioRepository = usuarioRepository;
         this.cafeRepository = cafeRepository;
         this.reaccionRepository = reaccionRepository;
         this.reviewMapper = reviewMapper;
+        this.userService = userService;
     }
 
 
@@ -55,8 +57,11 @@ public class ReviewService {
 
         reviewRepository.save(review);
 
-        return reviewMapper.toDTO(review, 0L, 0L, null);
-    }
+        return reviewMapper.toDTO(review, 0L, 0L,
+                reaccionRepository.findByUsuario_IdAndReview_Id(request.getUserId(), review.getId())
+                        .map(LikeReview::getTipo)
+                        .orElse(null)
+        );    }
 
 
     public ReviewResponseDTO editarReview(Long reviewId, ReviewRequestDTO request) {
@@ -88,7 +93,11 @@ public class ReviewService {
         long likes = reaccionRepository.countByReviewIdAndTipo(reviewId, TipoReaccion.LIKE);
         long dislikes = reaccionRepository.countByReviewIdAndTipo(reviewId, TipoReaccion.DISLIKE);
 
-        return reviewMapper.toDTO(review, likes, dislikes, null);
+        return reviewMapper.toDTO(review, likes, dislikes,
+                reaccionRepository.findByUsuario_IdAndReview_Id(request.getUserId(), review.getId())
+                        .map(LikeReview::getTipo)
+                        .orElse(null)
+        );
     }
 
 
@@ -99,6 +108,19 @@ public class ReviewService {
 
         review.setEstado(EstadoReview.ELIMINADA);
         reviewRepository.save(review);
+    }
+
+    @Transactional
+    public void eliminarReviewsPorUsuario(Long userId) {
+        List<Review> reviews = reviewRepository.findByUsuarioIdAndEstadoIn(
+                userId,
+                List.of(EstadoReview.ACTIVA, EstadoReview.INACTIVA)
+        );
+        for (Review r : reviews) {
+            r.setEstado(EstadoReview.ELIMINADA);
+        }
+
+        reviewRepository.saveAll(reviews);
     }
 
     public void desactivar(Long reviewId) {
@@ -119,22 +141,18 @@ public class ReviewService {
         reviewRepository.save(review);
     }
 
-    public List<ReviewResponseDTO> getByCafeId(Long cafeId, boolean incluirInactivas, Long currentUserId) {
-
-        List<Review> reviews = incluirInactivas
-                ? reviewRepository.findByCafeIdAndEstadoIn(
-                cafeId,
-                List.of(EstadoReview.ACTIVA, EstadoReview.INACTIVA)
-        )
-                : reviewRepository.findByCafeIdAndEstado(
-                cafeId,
-                EstadoReview.ACTIVA
-        );
-        return mapReviewsConReacciones(reviews, currentUserId);
+    public List<ReviewResponseDTO> getByCafeId(Long cafeId) {
+        Usuario usuario=userService.getUsuarioAutenticado();
+        List<Review> reviews=new ArrayList<Review>();
+        if(usuario.getTipoDeUsuario() == TipoDeUsuario.CLIENTE && usuario.getEstado() == EstadoUsuario.ACTIVO) {
+            reviews=reviewRepository.findReviewsVisiblesPorCafe(cafeId);
+        }else{
+            reviews=reviewRepository.findReviewsParaAdmin(cafeId);
+        }
+        return mapReviewsConReacciones(reviews);
     }
 
     public List<ReviewResponseDTO> getByUserId(Long userId, boolean incluirInactivas) {
-
         List<Review> reviews = incluirInactivas
                 ? reviewRepository.findByUsuarioIdAndEstadoIn(
                 userId,
@@ -145,10 +163,13 @@ public class ReviewService {
                 EstadoReview.ACTIVA
         );
 
-        return mapReviewsConReacciones(reviews, userId);
+        return mapReviewsConReacciones(reviews);
     }
 
-    private List<ReviewResponseDTO> mapReviewsConReacciones(List<Review> reviews, Long userId) {
+    private List<ReviewResponseDTO> mapReviewsConReacciones(List<Review> reviews) {
+
+        List<LikeReview> todas = reaccionRepository.findAll();
+        Usuario usuario=userService.getUsuarioAutenticado();
 
         return reviews.stream().map(review -> {
 
@@ -159,9 +180,9 @@ public class ReviewService {
 
             TipoReaccion reaccionUsuario = null;
 
-            if (userId != null) {
+            if (usuario.getId()!= null) {
                 reaccionUsuario = reaccionRepository
-                        .findByUsuarioIdAndReviewId(userId, reviewId) // 🔥 ESTE ES EL CORRECTO
+                        .findByUsuario_IdAndReview_Id(usuario.getId(), reviewId)
                         .map(LikeReview::getTipo)
                         .orElse(null);
             }
@@ -172,19 +193,16 @@ public class ReviewService {
     }
 
     public void reaccionar(Long reviewId, Long userId, TipoReaccion tipo) {
-
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new RuntimeException("Review no encontrada"));
-
         Usuario user = usuarioRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        LikeReview existente = reaccionRepository.findByUsuarioIdAndReviewId(userId, reviewId).orElse(null);
+        LikeReview existente = reaccionRepository.findByUsuario_IdAndReview_Id(userId, reviewId).orElse(null);
 
         if (existente != null) {
             existente.setTipo(tipo);
-            reaccionRepository.save(existente);
-            return;
+            return; // ya persiste por la transacción
         }
 
         LikeReview nueva = new LikeReview();
@@ -196,7 +214,7 @@ public class ReviewService {
     }
 
     public void quitarReaccion(Long reviewId, Long userId) {
-        reaccionRepository.deleteByUsuarioIdAndReviewId(userId, reviewId);
+        reaccionRepository.deleteByUsuario_IdAndReview_Id(userId, reviewId);
     }
 
 }

@@ -12,7 +12,11 @@ public interface LikeReviewRepository extends JpaRepository<LikeReview, Long> {
     @Query("SELECT COUNT(l) FROM LikeReview l WHERE l.review.id = :reviewId AND l.tipo = :tipo")
     Long countByReviewIdAndTipo(Long reviewId, TipoReaccion tipo);
 
+    void deleteByUsuario_IdAndReview_Id(Long usuarioId, Long reviewId);
+    Optional<LikeReview> findByUsuario_IdAndReview_Id(Long usuarioId, Long reviewId);
+
+    /*
     Optional<LikeReview> findByUsuarioIdAndReviewId(Long userId, Long id);
 
-    void deleteByUsuarioIdAndReviewId(Long userId, Long reviewId);
+    void deleteByUsuarioIdAndReviewId(Long userId, Long reviewId);*/
 }

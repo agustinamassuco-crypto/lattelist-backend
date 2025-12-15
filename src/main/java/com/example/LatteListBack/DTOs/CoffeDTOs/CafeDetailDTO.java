@@ -24,6 +24,7 @@ public record CafeDetailDTO(
         Boolean delivery,
         Boolean internet_access,
         Boolean outdoor_seating,
+        Boolean abiertoAhora,
 
         Double puntuacion,
         CostoPromedio costoPromedio,

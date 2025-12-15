@@ -35,7 +35,8 @@ public class LikeReviewService {
         Review review = reviewRepo.findById(reviewId)
                 .orElseThrow(() -> new RuntimeException("Review no encontrada"));
 
-        var existente = likeRepo.findByUsuarioIdAndReviewId(usuarioId, reviewId);
+        var existente =
+                likeRepo.findByUsuario_IdAndReview_Id(usuarioId, reviewId);
 
         if (existente.isPresent()) {
             LikeReview like = existente.get();
@@ -58,7 +59,7 @@ public class LikeReviewService {
 
     @Transactional
     public void quitarReaccion(Long usuarioId, Long reviewId) {
-        var existente = likeRepo.findByUsuarioIdAndReviewId(usuarioId, reviewId);
+        var existente = likeRepo.findByUsuario_IdAndReview_Id(usuarioId, reviewId);
 
         if (existente.isPresent()) {
             likeRepo.delete(existente.get());
@@ -75,7 +76,7 @@ public class LikeReviewService {
 
     public TipoReaccion reaccionUsuario(Long usuarioId, Long reviewId) {
         return likeRepo
-                .findByUsuarioIdAndReviewId(usuarioId, reviewId)
+                .findByUsuario_IdAndReview_Id(usuarioId, reviewId)
                 .map(LikeReview::getTipo)
                 .orElse(null);
     }
