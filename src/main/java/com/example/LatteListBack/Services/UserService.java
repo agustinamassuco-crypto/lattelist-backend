@@ -10,6 +10,7 @@ import com.example.LatteListBack.Models.Usuario;
 import com.example.LatteListBack.Repositorys.UserRepository;
 import com.example.LatteListBack.Config.JwtService;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -27,13 +28,16 @@ public class UserService {
     private final JwtService jwtService;
     private final EmailService emailService;
     private final ListaDeCafesService listaService;
+    private final ReviewService reviewService;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService, EmailService emailService, @Lazy ListaDeCafesService listaService) {
+
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService, EmailService emailService, @Lazy ListaDeCafesService listaService, @Lazy ReviewService reviewService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.emailService = emailService;
         this.listaService = listaService;
+        this.reviewService = reviewService;
     }
 
     public AuthResponseDTO registrarUsuarioCliente(UsuarioRegistroDTO request) {
@@ -99,17 +103,6 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
-  /*  public UsuarioCompletoDTO obtenerMiPerfil() {
-        Usuario u = getUsuarioAutenticado();
-        return UsuarioFactory.toCompletoDTO(u);
-    }
-
-    public UsuarioCompletoDTO obtenerPerfilPorId(Long id) {
-        Usuario u = userRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado con ID: " + id));
-        return UsuarioFactory.toCompletoDTO(u);
-    }*/
-
 
 
     public Usuario getUsuarioAutenticado() {
@@ -122,10 +115,7 @@ public class UserService {
         return userRepository.findByEmail(email).isPresent();
     }
 
-    public void eliminarUsuario(Long id) {
-        if (!userRepository.existsById(id)) throw new EntityNotFoundException("Usuario no existe");
-        userRepository.deleteById(id);
-    }
+
 
     public Long contarAdminsActivos() {
         return userRepository.countByTipoDeUsuarioAndEstado(
@@ -133,6 +123,8 @@ public class UserService {
                 EstadoUsuario.ACTIVO
         );
     }
+
+
 
     public void solicitarRecuperacion(String email) {
         userRepository.findByEmail(email).ifPresent(u -> {
@@ -155,14 +147,54 @@ public class UserService {
         userRepository.save(u);
     }
 
-    /* a esto le falta
-    public void cambiarEstadoUsuario(Long id, String nuevoEstado) {
-        Usuario u = userRepository.findById(id).orElseThrow();
-        try {
-            u.setEstado(EstadoUsuario.valueOf(nuevoEstado));
-            userRepository.save(u);
-        } catch (IllegalArgumentException e) {
-            throw new RuntimeException("Estado inválido: " + nuevoEstado);
+    public UsuarioListDTO getUsuarioPorId(Long id) {
+        Usuario usuario = userRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
+        return UsuarioFactory.toListDTO(usuario);
+    }
+
+    @Transactional
+    public void cambiarEstadoUsuario(Long id, EstadoUsuario nuevoEstado) {
+        Usuario u = userRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado con ID: " + id));
+
+        if (u.getEstado() == nuevoEstado) return;
+        EstadoUsuario estadoAnterior = u.getEstado();
+
+        //Si eliminamos el user hacemos soft delete, eliminados de verdad sus listas
+        //y pasamos sus resenias a estado eliminado, tambien liberamos el email del user
+        if (nuevoEstado == EstadoUsuario.ELIMINADO) {
+            String emailOriginal = u.getEmail();
+            listaService.eliminarListasDeUsuario(u.getUsername());
+            reviewService.eliminarReviewsPorUsuario(id);
+
+            emailService.enviarCorreoEliminacion(emailOriginal, u.getNombre());
+
+            String emailLiberado = u.getEmail() + "_deleted_" + System.currentTimeMillis();
+            u.setEmail(emailLiberado);
         }
-    }*/
+
+
+        //le avisamos por mail que fue inactivado por el admin
+        else if (nuevoEstado == EstadoUsuario.INACTIVO) {
+            emailService.enviarNotificacionSuspension(u.getEmail(), u.getNombre());
+
+            //le mandamos mail cuando de de baja su cuenta
+        } else if (nuevoEstado == EstadoUsuario.DESACTIVADO) {
+            emailService.enviarNotificacionPausa(u.getEmail(), u.getNombre());
+        }
+        //el admin me perdono
+        else if (nuevoEstado == EstadoUsuario.ACTIVO && estadoAnterior == EstadoUsuario.INACTIVO) {
+            emailService.enviarNotificacionReactivacion(u.getEmail(), u.getNombre());
+        }
+
+        u.setEstado(nuevoEstado);
+        userRepository.save(u);
+    }
+
+
+
+
+
+
 }

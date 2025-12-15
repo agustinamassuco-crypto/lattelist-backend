@@ -14,29 +14,69 @@ public class EmailService {
 
     @Async
     public void enviarCorreoBienvenida(String destinatario, String nombre) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(destinatario);
-        message.setSubject("¡Bienvenido a LatteList! ☕");
-        message.setText("Hola " + nombre + ",\n\n" +
-                "Tu cuenta ha sido creada exitosamente.\n" +
-                "Ya puedes iniciar sesión y comenzar a puntuar tus cafés favoritos.\n\n" +
-                "Saludos,\nEl equipo de LatteList.");
-
-        mailSender.send(message);
+        enviarMail(destinatario, "¡Bienvenido a LatteList! ☕",
+                "Hola " + nombre + ",\n\nTu cuenta ha sido creada exitosamente."+
+                        "Ya puedes iniciar sesión y comenzar a puntuar tus cafés favoritos.\n\n" +
+                        "Saludos,\nEl equipo de LatteList.");
     }
+
 
     @Async
     public void enviarCorreoRecuperacion(String destinatario, String token) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(destinatario);
-        message.setSubject("Recuperación de Contraseña - LatteList");
-        message.setText("Hola,\n\n" +
-                "Hemos recibido una solicitud para restablecer tu contraseña.\n" +
-                "Haz clic en el siguiente enlace para crear una nueva:\n\n" +
-                "http://localhost:4200/auth/reset-password?token=" + token + "\n\n" + //puerto angular
-                "Si no fuiste tú, ignora este mensaje.\n" +
-                "El enlace expira en 15 minutos.");
+        String link = "http://localhost:4200/auth/reset-password?token=" + token;
+        enviarMail(destinatario, "Recuperación de Contraseña - LatteList",
+                "Haz clic aquí para restablecer tu contraseña:\n" + link + "\n\nEl enlace expira en 15 minutos.");
+    }
 
+
+    //inactivo
+    @Async
+    public void enviarNotificacionSuspension(String destinatario, String nombre) {
+        enviarMail(destinatario, "Aviso de Suspensión de Cuenta - LatteList",
+                "Hola " + nombre + ",\n\n" +
+                        "Tu cuenta ha sido suspendida por un administrador por incumplimiento de las normas.\n" +
+                        "Si crees que esto es un error, por favor contacta con soporte.\n\n" +
+                        "Saludos,\nEl equipo de LatteList.");
+    }
+
+    //desactivado
+    @Async
+    public void enviarNotificacionPausa(String destinatario, String nombre) {
+        enviarMail(destinatario, "Tu cuenta ha sido pausada - LatteList",
+                "Hola " + nombre + ",\n\n" +
+                        "Confirmamos que has pausado tu cuenta temporalmente.\n" +
+                        "Tus datos están guardados, pero tu perfil no será visible.\n" +
+                        "Para reactivarla, simplemente inicia sesión nuevamente.\n\n" +
+                        "¡Te esperamos de vuelta pronto!");
+    }
+
+    //eliminado
+    @Async
+    public void enviarCorreoEliminacion(String destinatario, String nombre) {
+        enviarMail(destinatario, "Tu cuenta ha sido eliminada - LatteList",
+                "Hola " + nombre + ",\n\n" +
+                        "Como solicitaste, tu cuenta ha sido eliminada permanentemente del sistema.\n" +
+                        "Tus datos personales ya no son accesibles.\n\n" +
+                        "Esperamos verte de nuevo algún día.\n" +
+                        "Saludos,\nEl equipo de LatteList.");
+    }
+
+    //re activacion
+    @Async
+    public void enviarNotificacionReactivacion(String destinatario, String nombre) {
+        enviarMail(destinatario, "¡Tu cuenta ha sido reactivada! - LatteList",
+                "Hola " + nombre + ",\n\n" +
+                        "Buenas noticias. Un administrador ha revisado tu caso y ha reactivado tu cuenta.\n" +
+                        "Ya puedes volver a iniciar sesión y utilizar la plataforma con normalidad.\n\n" +
+                        "¡Bienvenido de nuevo!\n" +
+                        "El equipo de LatteList.");
+    }
+
+    private void enviarMail(String to, String subject, String text) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(to);
+        message.setSubject(subject);
+        message.setText(text);
         mailSender.send(message);
     }
 }

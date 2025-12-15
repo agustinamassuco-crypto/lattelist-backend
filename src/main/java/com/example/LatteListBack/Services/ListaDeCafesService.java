@@ -8,6 +8,7 @@ import com.example.LatteListBack.Models.ListaDeCafes;
 import com.example.LatteListBack.Models.Usuario;
 import com.example.LatteListBack.Repositorys.ListaDeCafesRepository;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
@@ -66,6 +67,14 @@ public class ListaDeCafesService {
 
         listaRepository.save(favoritos);
     }
+
+    @Transactional
+    public void eliminarListasDeUsuario(String email) {
+        List<ListaDeCafes> listas = listaRepository.findByUsuario_Email(email);
+        listaRepository.deleteAll(listas);
+    }
+
+
 
 
 }

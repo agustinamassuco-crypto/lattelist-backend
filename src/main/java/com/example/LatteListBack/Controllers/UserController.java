@@ -3,6 +3,7 @@ package com.example.LatteListBack.Controllers;
 import com.example.LatteListBack.DTOs.AuthDTOs.AuthResponseDTO;
 import com.example.LatteListBack.DTOs.UserDTOs.UsuarioListDTO;
 import com.example.LatteListBack.DTOs.UserDTOs.UsuarioRegistroDTO;
+import com.example.LatteListBack.Enums.EstadoUsuario;
 import com.example.LatteListBack.Services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -39,34 +40,31 @@ public class UserController {
     public ResponseEntity<List<UsuarioListDTO>> listarUsuariosParaAdmin() {
         return ResponseEntity.ok(userService.obtenerTodosLosUsuarios());
     }
-/*
-   @GetMapping("/perfil")
-    public ResponseEntity<UsuarioCompletoDto> verMiPerfil() {
-        return ResponseEntity.ok(userService.obtenerMiPerfil());
-    }
 
-    @PreAuthorize("hasAuthority('ADMIN')")
-    @GetMapping("/{id}/perfil")
-    public ResponseEntity<UsuarioCompletoDto> verPerfilDeOtro(@PathVariable Long id) {
-        return ResponseEntity.ok(userService.obtenerPerfilPorId(id));
-    }*/
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminarUsuario(@PathVariable Long id) {
-        userService.eliminarUsuario(id);
-        return ResponseEntity.noContent().build();
-    }
 
     @GetMapping("/count-admins")
     public ResponseEntity<Long> contarAdmins() {
         return ResponseEntity.ok(userService.contarAdminsActivos());
     }
 
-  /*  @PatchMapping("/{id}/estado")
+    @GetMapping("/{id}")
+    public ResponseEntity<UsuarioListDTO> obtenerUsuarioPorId(@PathVariable Long id) {
+        return ResponseEntity.ok(userService.getUsuarioPorId(id));
+    }
+    @PatchMapping("/{id}/estado")
     public ResponseEntity<Void> cambiarEstado(@PathVariable Long id, @RequestBody Map<String, String> body) {
-        String nuevoEstado = body.get("estado"); // Espera "INACTIVO" o "ACTIVO"
-        userService.cambiarEstadoUsuario(id, nuevoEstado);
-        return ResponseEntity.ok().build();
-    }*/
+        String estadoStr = body.get("estado");
+        if (estadoStr == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        try {
+            EstadoUsuario nuevoEstado = EstadoUsuario.valueOf(estadoStr);
+            userService.cambiarEstadoUsuario(id, nuevoEstado);
+            return ResponseEntity.ok().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
 
 }
