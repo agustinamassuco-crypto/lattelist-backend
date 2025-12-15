@@ -7,17 +7,18 @@ public class CafeFactory {
     private CafeFactory() {
     }
 
-    public static CafeListDTO toListDTO(Cafe c) {
+    public static CafeListDTO toListDTO(Cafe c, boolean abiertoAhora) {
         return new CafeListDTO(
                 c.getId(),
                 c.getNombre(),
                 c.getDireccion(),
                 c.getLatitud(),
-                c.getLongitud()
+                c.getLongitud(),
+                abiertoAhora
         );
     }
 
-    public static CafeDetailDTO toDetailDTO(Cafe c, CafeMetrics m) {
+    public static CafeDetailDTO toDetailDTO(Cafe c, CafeMetrics m, boolean abiertoAhora) {
         return new CafeDetailDTO(
                 c.getId(),
                 c.getOsmId(),
@@ -34,12 +35,12 @@ public class CafeFactory {
                 c.getDelivery(),
                 c.getInternetAccess(),
                 c.getOutdoorSeating(),
+                abiertoAhora,
                 m.puntuacion(),
                 m.costoPromedio(),
                 m.etiquetasTop3()
         );
-
-
     }
+
 }
 

@@ -5,6 +5,7 @@ public record CafeListDTO(
         String nombre,
         String direccion,
         Double latitud,
-        Double longitud
+        Double longitud,
+        Boolean abiertoAhora
         ) {}
 
