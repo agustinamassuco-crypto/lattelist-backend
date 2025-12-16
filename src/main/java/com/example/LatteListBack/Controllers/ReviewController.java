@@ -16,14 +16,67 @@ import java.util.List;
 public class ReviewController {
 
     private final ReviewService reviewService;
-    private final UserRepository userRepository;
 
-    public ReviewController(ReviewService reviewService, UserRepository userRepository) {
+    public ReviewController(ReviewService reviewService) {
         this.reviewService = reviewService;
-        this.userRepository = userRepository;
     }
 
-    @PostMapping
+        @PostMapping
+        public ReviewResponseDTO crearReview(@RequestBody ReviewRequestDTO request) {
+            return reviewService.crearReview(request);
+        }
+
+        @PutMapping("/{reviewId}")
+        public ReviewResponseDTO editarReview(
+                @PathVariable Long reviewId,
+                @RequestBody ReviewRequestDTO request
+        ) {
+            return reviewService.editarReview(reviewId, request);
+        }
+
+        @DeleteMapping("/{reviewId}")
+        public void eliminar(@PathVariable Long reviewId) {
+            reviewService.eliminar(reviewId);
+        }
+
+        @PatchMapping("/{reviewId}/desactivar")
+        public void desactivar(@PathVariable Long reviewId) {
+            reviewService.desactivar(reviewId);
+        }
+
+        @PatchMapping("/{reviewId}/activar")
+        public void activar(@PathVariable Long reviewId) {
+            reviewService.activar(reviewId);
+        }
+
+        @GetMapping("/cafe/{cafeId}")
+        public List<ReviewResponseDTO> getByCafeId(@PathVariable Long cafeId) {
+            return reviewService.getByCafeId(cafeId);
+        }
+
+        @GetMapping("/usuario/{userId}")
+        public List<ReviewResponseDTO> getByUserId(
+                @PathVariable Long userId,
+                @RequestParam(defaultValue = "false") boolean incluirInactivas
+        ) {
+            return reviewService.getByUserId(userId, incluirInactivas);
+        }
+
+        @PostMapping("/{reviewId}/reaccion")
+        public void reaccionar(
+                @PathVariable Long reviewId,
+                @RequestParam TipoReaccion tipo
+        ) {
+            reviewService.reaccionar(reviewId, tipo);
+        }
+
+        @DeleteMapping("/{reviewId}/reaccion")
+        public void quitarReaccion(@PathVariable Long reviewId) {
+            reviewService.quitarReaccion(reviewId);
+        }
+    }
+
+    /*@PostMapping
     public ReviewResponseDTO crearReview(@RequestBody ReviewRequestDTO request) {
         System.out.println("ENTRÉ AL CONTROLLER");
         return reviewService.crearReview(request);
@@ -87,7 +140,7 @@ public class ReviewController {
             @PathVariable Long userId,
             @RequestParam TipoReaccion tipo
     ) {
-        reviewService.reaccionar(reviewId, userId, tipo);
+        reviewService.reaccionar(reviewId tipo);
     }
 
     @DeleteMapping("/{reviewId}/reaccion/{userId}")
@@ -95,6 +148,5 @@ public class ReviewController {
             @PathVariable Long reviewId,
             @PathVariable Long userId
     ) {
-        reviewService.quitarReaccion(reviewId, userId);
-    }
-}
+        reviewService.quitarReaccion(reviewId);
+    }*/

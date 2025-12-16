@@ -36,10 +36,10 @@ public class Review {
     @Column(name = "etiqueta")
     private List<Etiquetas> etiquetas = new ArrayList<>();
 
-    @ElementCollection
-    @CollectionTable(name = "review_fotos", joinColumns = @JoinColumn(name = "review_id"))
-    @Column(name = "foto", columnDefinition = "LONGTEXT")
-    private List<String> fotos = new ArrayList<>();
+        @ElementCollection
+        @CollectionTable(name = "review_fotos", joinColumns = @JoinColumn(name = "review_id"))
+        @Column(name = "foto", columnDefinition = "LONGTEXT")
+        private List<String> fotos = new ArrayList<>();
 
 
     @Enumerated(EnumType.STRING)

@@ -23,9 +23,38 @@ public class ReviewResponseDTO {
     private TipoReaccion reaccionActualUsuario;
 
     private Long userId;
+    private String userNombre;
+    private String userApellido;
+    private String userFotoPerfil;
+
+
     private Long cafeId;
 
     private EstadoReview estado;
+
+    public String getUserNombre() {
+        return userNombre;
+    }
+
+    public void setUserNombre(String userNombre) {
+        this.userNombre = userNombre;
+    }
+
+    public String getUserApellido() {
+        return userApellido;
+    }
+
+    public void setUserApellido(String userApellido) {
+        this.userApellido = userApellido;
+    }
+
+    public String getUserFotoPerfil() {
+        return userFotoPerfil;
+    }
+
+    public void setUserFotoPerfil(String userFotoPerfil) {
+        this.userFotoPerfil = userFotoPerfil;
+    }
 
     public EstadoReview getEstado() {
         return estado;

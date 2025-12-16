@@ -44,7 +44,7 @@ public class GeoapifyService {
 
         String categories = "catering.cafe";
         String filter = "place:5142a7026ec4ca4cc059149fe16f6a0243c0f00101f901e7eb330000000000c0020692030d4d61722064656c20506c617461";
-        int limit = 30;
+        int limit = 50;
 
         GeoapifyResponse response = webClient.get()
                 .uri(uriBuilder -> uriBuilder

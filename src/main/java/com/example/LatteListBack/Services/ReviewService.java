@@ -11,7 +11,6 @@ import com.example.LatteListBack.Models.Usuario;
 import com.example.LatteListBack.Repositorys.CafeRepository;
 import com.example.LatteListBack.Repositorys.LikeReviewRepository;
 import com.example.LatteListBack.Repositorys.ReviewRepository;
-import com.example.LatteListBack.Repositorys.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
@@ -23,21 +22,18 @@ import java.util.List;
 public class ReviewService {
 
     private final ReviewRepository reviewRepository;
-    private final UserRepository usuarioRepository;
     private final CafeRepository cafeRepository;
     private final LikeReviewRepository reaccionRepository;
     private final ReviewMapper reviewMapper;
     private final UserService userService;
 
     public ReviewService(ReviewRepository reviewRepository,
-                         UserRepository usuarioRepository,
                          CafeRepository cafeRepository,
                          LikeReviewRepository reaccionRepository,
                          ReviewMapper reviewMapper,
                          UserService userService) {
 
         this.reviewRepository = reviewRepository;
-        this.usuarioRepository = usuarioRepository;
         this.cafeRepository = cafeRepository;
         this.reaccionRepository = reaccionRepository;
         this.reviewMapper = reviewMapper;
@@ -45,10 +41,79 @@ public class ReviewService {
     }
 
 
+
+    public ReviewResponseDTO editarReview(Long reviewId, ReviewRequestDTO request) {
+
+        Usuario usuario = userService.getUsuarioAutenticado();
+
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new RuntimeException("Review no encontrada"));
+
+        if (!review.getUsuario().getId().equals(usuario.getId())) {
+            throw new RuntimeException("No podés editar una review que no es tuya");
+        }
+
+        review.setComentario(request.getComentario());
+        review.setPuntuacion(request.getPuntuacion());
+
+        if (request.getCostoPromedio() != null && !request.getCostoPromedio().isBlank()) {
+            review.setCostoPromedio(CostoPromedio.valueOf(request.getCostoPromedio()));
+        } else {
+            review.setCostoPromedio(null);
+        }
+
+        review.setEtiquetas(
+                request.getEtiquetas() != null
+                        ? reviewMapper.mapEtiquetas(request.getEtiquetas())
+                        : List.of()
+        );
+
+        review.setFotos(request.getFotos());
+
+        reviewRepository.save(review);
+
+        long likes = reaccionRepository.countByReviewIdAndTipo(reviewId, TipoReaccion.LIKE);
+        long dislikes = reaccionRepository.countByReviewIdAndTipo(reviewId, TipoReaccion.DISLIKE);
+
+        TipoReaccion reaccionUsuario = reaccionRepository
+                .findByUsuario_IdAndReview_Id(usuario.getId(), reviewId)
+                .map(LikeReview::getTipo)
+                .orElse(null);
+
+        return reviewMapper.toDTO(review, likes, dislikes, reaccionUsuario);
+    }
+
+
+    public void reaccionar(Long reviewId, TipoReaccion tipo) {
+
+        Usuario user = userService.getUsuarioAutenticado();
+
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new RuntimeException("Review no encontrada"));
+
+        LikeReview existente = reaccionRepository
+                .findByUsuario_IdAndReview_Id(user.getId(), reviewId)
+                .orElse(null);
+
+        if (existente != null) {
+            existente.setTipo(tipo);
+            return;
+        }
+
+        LikeReview nueva = new LikeReview();
+        nueva.setReview(review);
+        nueva.setUsuario(user);
+        nueva.setTipo(tipo);
+
+        reaccionRepository.save(nueva);
+    }
+
+
+
+
     public ReviewResponseDTO crearReview(ReviewRequestDTO request) {
 
-        Usuario user = usuarioRepository.findById(request.getUserId())
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        Usuario user = userService.getUsuarioAutenticado();
 
         Cafe cafe = cafeRepository.findById(request.getCafeId())
                 .orElseThrow(() -> new RuntimeException("Café no encontrado"));
@@ -62,43 +127,6 @@ public class ReviewService {
                         .map(LikeReview::getTipo)
                         .orElse(null)
         );    }
-
-
-    public ReviewResponseDTO editarReview(Long reviewId, ReviewRequestDTO request) {
-
-        Review review = reviewRepository.findById(reviewId)
-                .orElseThrow(() -> new RuntimeException("Review no encontrada"));
-
-        review.setComentario(request.getComentario());
-        review.setPuntuacion(request.getPuntuacion());
-        if (request.getCostoPromedio() != null && !request.getCostoPromedio().isBlank()) {
-            review.setCostoPromedio(
-                    CostoPromedio.valueOf(request.getCostoPromedio())
-            );
-        } else {
-            review.setCostoPromedio(null);
-        }
-
-        if (request.getEtiquetas() != null) {
-            review.setEtiquetas(reviewMapper.mapEtiquetas(request.getEtiquetas()));
-        } else {
-            review.setEtiquetas(List.of());
-        }
-        review.setFotos(request.getFotos());
-
-        reviewRepository.save(review);
-        System.out.println("REVIEW USER: " + review.getUsuario().getEmail());
-
-
-        long likes = reaccionRepository.countByReviewIdAndTipo(reviewId, TipoReaccion.LIKE);
-        long dislikes = reaccionRepository.countByReviewIdAndTipo(reviewId, TipoReaccion.DISLIKE);
-
-        return reviewMapper.toDTO(review, likes, dislikes,
-                reaccionRepository.findByUsuario_IdAndReview_Id(request.getUserId(), review.getId())
-                        .map(LikeReview::getTipo)
-                        .orElse(null)
-        );
-    }
 
 
     public void eliminar(Long reviewId) {
@@ -192,29 +220,14 @@ public class ReviewService {
         }).toList();
     }
 
-    public void reaccionar(Long reviewId, Long userId, TipoReaccion tipo) {
-        Review review = reviewRepository.findById(reviewId)
-                .orElseThrow(() -> new RuntimeException("Review no encontrada"));
-        Usuario user = usuarioRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+    public void quitarReaccion(Long reviewId) {
 
-        LikeReview existente = reaccionRepository.findByUsuario_IdAndReview_Id(userId, reviewId).orElse(null);
+        Usuario user = userService.getUsuarioAutenticado();
 
-        if (existente != null) {
-            existente.setTipo(tipo);
-            return; // ya persiste por la transacción
-        }
-
-        LikeReview nueva = new LikeReview();
-        nueva.setReview(review);
-        nueva.setUsuario(user);
-        nueva.setTipo(tipo);
-
-        reaccionRepository.save(nueva);
-    }
-
-    public void quitarReaccion(Long reviewId, Long userId) {
-        reaccionRepository.deleteByUsuario_IdAndReview_Id(userId, reviewId);
+        reaccionRepository.deleteByUsuario_IdAndReview_Id(
+                user.getId(),
+                reviewId
+        );
     }
 
 }
