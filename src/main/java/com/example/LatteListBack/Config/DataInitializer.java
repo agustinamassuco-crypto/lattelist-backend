@@ -13,6 +13,7 @@ public class DataInitializer implements CommandLineRunner {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    public static final String SUPER_ADMIN_EMAIL = "admin@lattelist.com";
 
     public DataInitializer(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
@@ -22,16 +23,15 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     public void run(String... args)  {
 
-        String emailAdmin = "admin@lattelist.com";
 
-        if (userRepository.findByEmail(emailAdmin).isEmpty()) {
+        if (userRepository.findByEmail(SUPER_ADMIN_EMAIL).isEmpty()) {
 
             System.out.println("Creando super admin--");
 
             Usuario admin = new Usuario();
             admin.setNombre("Super");
             admin.setApellido("Admin");
-            admin.setEmail(emailAdmin);
+            admin.setEmail(SUPER_ADMIN_EMAIL);
             admin.setPassword(passwordEncoder.encode("admin123"));
             admin.setTipoDeUsuario(TipoDeUsuario.ADMIN);
             admin.setEstado(EstadoUsuario.ACTIVO);
@@ -39,7 +39,7 @@ public class DataInitializer implements CommandLineRunner {
 
             userRepository.save(admin);
 
-            System.out.println("Admin creado: " + emailAdmin);
+            System.out.println("Admin creado: " + admin.getEmail());
 
         }
     }

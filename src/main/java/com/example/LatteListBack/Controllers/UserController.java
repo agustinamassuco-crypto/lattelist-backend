@@ -1,6 +1,7 @@
 package com.example.LatteListBack.Controllers;
 
 import com.example.LatteListBack.DTOs.AuthDTOs.AuthResponseDTO;
+import com.example.LatteListBack.DTOs.AuthDTOs.ChangePasswordDTO;
 import com.example.LatteListBack.DTOs.UserDTOs.UsuarioListDTO;
 import com.example.LatteListBack.DTOs.UserDTOs.UsuarioRegistroDTO;
 import com.example.LatteListBack.Enums.EstadoUsuario;
@@ -42,15 +43,22 @@ public class UserController {
     }
 
 
-    @GetMapping("/count-admins")
+    /*@GetMapping("/count-admins")
     public ResponseEntity<Long> contarAdmins() {
         return ResponseEntity.ok(userService.contarAdminsActivos());
-    }
+    }*/
 
     @GetMapping("/{id}")
     public ResponseEntity<UsuarioListDTO> obtenerUsuarioPorId(@PathVariable Long id) {
         return ResponseEntity.ok(userService.getUsuarioPorId(id));
     }
+
+    @PatchMapping("/me/password")
+    public ResponseEntity<Void> cambiarContrasena(@RequestBody ChangePasswordDTO dto) {
+        userService.cambiarContrasena(dto);
+        return ResponseEntity.ok().build();
+    }
+
     @PatchMapping("/{id}/estado")
     public ResponseEntity<Void> cambiarEstado(@PathVariable Long id, @RequestBody Map<String, String> body) {
         String estadoStr = body.get("estado");

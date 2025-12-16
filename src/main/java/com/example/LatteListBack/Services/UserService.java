@@ -1,6 +1,7 @@
 package com.example.LatteListBack.Services;
 
 import com.example.LatteListBack.DTOs.AuthDTOs.AuthResponseDTO;
+import com.example.LatteListBack.DTOs.AuthDTOs.ChangePasswordDTO;
 import com.example.LatteListBack.DTOs.UserDTOs.UsuarioFactory;
 import com.example.LatteListBack.DTOs.UserDTOs.UsuarioListDTO;
 import com.example.LatteListBack.DTOs.UserDTOs.UsuarioRegistroDTO;
@@ -19,6 +20,8 @@ import org.springframework.stereotype.Service;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static com.example.LatteListBack.Config.DataInitializer.SUPER_ADMIN_EMAIL;
 
 @Service
 public class UserService {
@@ -117,12 +120,12 @@ public class UserService {
 
 
 
-    public Long contarAdminsActivos() {
+  /*  public Long contarAdminsActivos() {
         return userRepository.countByTipoDeUsuarioAndEstado(
                 TipoDeUsuario.ADMIN,
                 EstadoUsuario.ACTIVO
         );
-    }
+    }*/
 
 
 
@@ -145,6 +148,23 @@ public class UserService {
 
         u.setPassword(passwordEncoder.encode(nuevaPassword));
         userRepository.save(u);
+
+        emailService.enviarAvisoCambioContrasena(u.getEmail(), u.getNombre());
+    }
+
+    public void cambiarContrasena(ChangePasswordDTO dto) {
+        Usuario u = getUsuarioAutenticado();
+
+        if (!passwordEncoder.matches(dto.actual(), u.getPassword())) {
+            throw new IllegalArgumentException("La contraseña actual es incorrecta.");
+        }
+        if (passwordEncoder.matches(dto.nueva(), u.getPassword())) {
+            throw new IllegalArgumentException("La nueva contraseña no puede ser igual a la anterior.");
+        }
+        u.setPassword(passwordEncoder.encode(dto.nueva()));
+        userRepository.save(u);
+
+        emailService.enviarAvisoCambioContrasena(u.getEmail(), u.getNombre());
     }
 
     public UsuarioListDTO getUsuarioPorId(Long id) {
@@ -160,6 +180,10 @@ public class UserService {
 
         if (u.getEstado() == nuevoEstado) return;
         EstadoUsuario estadoAnterior = u.getEstado();
+
+        if (u.getEmail().equals(SUPER_ADMIN_EMAIL)) {
+            throw new IllegalArgumentException("OPERACIÓN PROHIBIDA: No se puede modificar el estado del Super Admin.");
+        }
 
         //Si eliminamos el user hacemos soft delete, eliminados de verdad sus listas
         //y pasamos sus resenias a estado eliminado, tambien liberamos el email del user

@@ -72,6 +72,14 @@ public class EmailService {
                         "El equipo de LatteList.");
     }
 
+    @Async
+    public void enviarAvisoCambioContrasena(String destinatario, String nombre) {
+        enviarMail(destinatario, "Seguridad - Cambio de Contraseña",
+                "Hola " + nombre + ",\n\n" +
+                        "Te informamos que tu contraseña ha sido modificada exitosamente.\n" +
+                        "Si no fuiste tú, por favor contacta a soporte inmediatamente.");
+    }
+
     private void enviarMail(String to, String subject, String text) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(to);
