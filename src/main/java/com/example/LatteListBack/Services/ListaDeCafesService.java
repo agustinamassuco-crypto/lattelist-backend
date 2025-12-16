@@ -75,6 +75,37 @@ public class ListaDeCafesService {
     }
 
 
+    @Transactional
+    public void agregarCafe(Long listaId, Long cafeId) {
+        Usuario usuario = userService.getUsuarioAutenticado();
+
+        ListaDeCafes lista = listaRepository.findById(listaId)
+                .orElseThrow(() -> new EntityNotFoundException("Lista no encontrada"));
+
+        if (!lista.getUsuario().getId().equals(usuario.getId())) {
+            throw new AccessDeniedException("No puedes modificar esta lista");
+        }
+
+        if (lista.getIdCafes().add(cafeId)) {
+            listaRepository.save(lista);
+        }
+    }
+
+    @Transactional
+    public void quitarCafe(Long listaId, Long cafeId) {
+        Usuario usuario = userService.getUsuarioAutenticado();
+
+        ListaDeCafes lista = listaRepository.findById(listaId)
+                .orElseThrow(() -> new EntityNotFoundException("Lista no encontrada"));
+
+        if (!lista.getUsuario().getId().equals(usuario.getId())) {
+            throw new AccessDeniedException("No puedes modificar esta lista");
+        }
+
+        if (lista.getIdCafes().remove(cafeId)) {
+            listaRepository.save(lista);
+        }
+    }
 
 
 }

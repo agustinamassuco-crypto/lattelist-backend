@@ -37,4 +37,27 @@ public class ListController {
         listaService.eliminarLista(id);
         return ResponseEntity.noContent().build();
     }
+
+
+    @PreAuthorize("hasAuthority('CLIENTE')")
+    @PostMapping("/{listaId}/cafes/{cafeId}")
+    public ResponseEntity<Void> agregarCafe(
+            @PathVariable Long listaId,
+            @PathVariable Long cafeId) {
+
+        listaService.agregarCafe(listaId, cafeId);
+        return ResponseEntity.ok().build();
+    }
+
+    @PreAuthorize("hasAuthority('CLIENTE')")
+    @DeleteMapping("/{listaId}/cafes/{cafeId}")
+    public ResponseEntity<Void> quitarCafe(
+            @PathVariable Long listaId,
+            @PathVariable Long cafeId) {
+
+        listaService.quitarCafe(listaId, cafeId);
+        return ResponseEntity.noContent().build();
+    }
+
+
 }
