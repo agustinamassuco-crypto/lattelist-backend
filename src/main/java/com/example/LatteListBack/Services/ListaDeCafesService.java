@@ -13,6 +13,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -36,16 +37,27 @@ public class ListaDeCafesService {
                 .collect(Collectors.toList());
     }
 
+
+    public ListResumenDTO obtenerPorId(Long id) {
+        Usuario usuario = userService.getUsuarioAutenticado();
+        ListaDeCafes lista = listaRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Lista no encontrada"));
+
+        if (!lista.getUsuario().getId().equals(usuario.getId()) && !lista.getPublica()) {
+            throw new AccessDeniedException("No tienes permiso para ver esta lista.");
+        }
+
+        return ListFactory.toListDTO(lista);
+    }
+
+
     public ListResumenDTO crearLista(ListRequestDTO dto) {
         Usuario usuario = userService.getUsuarioAutenticado();
-
         ListaDeCafes lista = new ListaDeCafes();
         lista.setNombre(dto.nombre());
         lista.setUsuario(usuario);
-        lista.setFecha(LocalDate.now());
-
-        ListaDeCafes guardada = listaRepository.save(lista);
-        return ListFactory.toListDTO(guardada);
+        lista.setPublica(false);
+        return ListFactory.toListDTO(listaRepository.save(lista));
     }
 
     public void eliminarLista(Long idLista) {
@@ -59,6 +71,15 @@ public class ListaDeCafesService {
 
         listaRepository.delete(lista);
     }
+
+
+
+    public List<ListResumenDTO> obtenerListasPublicas() {
+        return listaRepository.findByPublicaTrue().stream()
+                .map(ListFactory::toListDTO)
+                .collect(Collectors.toList());
+    }
+
 
     public void crearListaFavoritos(Usuario usuario) {
         ListaDeCafes favoritos = new ListaDeCafes();
@@ -107,5 +128,59 @@ public class ListaDeCafesService {
         }
     }
 
+    @Transactional
+    public ListResumenDTO clonarLista(Long listaIdOriginal) {
+        Usuario usuario = userService.getUsuarioAutenticado();
+
+        ListaDeCafes original = listaRepository.findById(listaIdOriginal)
+                .orElseThrow(() -> new EntityNotFoundException("Lista original no encontrada"));
+
+        if (!original.getPublica() && !original.getUsuario().getId().equals(usuario.getId())) {
+            throw new AccessDeniedException("No puedes clonar una lista privada ajena.");
+        }
+
+        ListaDeCafes copia = new ListaDeCafes();
+        copia.setUsuario(usuario);
+        copia.setNombre(original.getNombre() + " (Copia)");
+        copia.setFecha(LocalDate.now());
+        copia.setPublica(false);
+
+        copia.setIdCafes(new HashSet<>(original.getIdCafes()));
+        copia.setIdCafesVisitados(new HashSet<>());
+
+        return ListFactory.toListDTO(listaRepository.save(copia));
+    }
+
+    @Transactional
+    public ListResumenDTO actualizarListaCompleta(Long id, ListResumenDTO dto) {
+        Usuario usuario = userService.getUsuarioAutenticado();
+        ListaDeCafes lista = listaRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Lista no encontrada"));
+
+        if (!lista.getUsuario().getId().equals(usuario.getId())) {
+            throw new AccessDeniedException("No puedes editar una lista que no es tuya.");
+        }
+        lista.setNombre(dto.nombre());
+
+        if (dto.idCafes() != null) {
+            lista.setIdCafes(new HashSet<>(dto.idCafes()));
+        }
+        if (dto.idCafesVisitados() != null) {
+            lista.setIdCafesVisitados(new HashSet<>(dto.idCafesVisitados()));
+        }
+        if (dto.publica() != null) lista.setPublica(dto.publica());
+
+        return ListFactory.toListDTO(listaRepository.save(lista));
+    }
+
+
+
+    public void cambiarVisibilidad(Long listaId, Boolean publica) {
+        Usuario u = userService.getUsuarioAutenticado();
+        ListaDeCafes l = listaRepository.findById(listaId).orElseThrow();
+        if(!l.getUsuario().getId().equals(u.getId())) throw new AccessDeniedException("Error");
+        l.setPublica(publica);
+        listaRepository.save(l);
+    }
 
 }

@@ -5,9 +5,7 @@ import jakarta.persistence.*;
 
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 
@@ -21,6 +19,9 @@ public class ListaDeCafes {
 
     @Column(nullable = false)
     private String nombre;
+
+    @Column(nullable = false)
+    private Boolean publica = false;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario_id", nullable = false)
@@ -52,6 +53,13 @@ public class ListaDeCafes {
         return id;
     }
 
+    public Boolean getPublica() {
+        return publica;
+    }
+
+    public void setPublica(Boolean publica) {
+        this.publica = publica;
+    }
 
     public String getNombre() {
         return nombre;

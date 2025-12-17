@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface ListaDeCafesRepository extends JpaRepository<ListaDeCafes, Long> {
     List<ListaDeCafes> findByUsuario_Email(String email);
+    List<ListaDeCafes> findByPublicaTrue();
 }
