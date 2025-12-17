@@ -4,6 +4,7 @@ import com.example.LatteListBack.Enums.CostoPromedio;
 import com.example.LatteListBack.Enums.EstadoReview;
 import com.example.LatteListBack.Enums.Etiquetas;
 import com.example.LatteListBack.Enums.TipoReaccion;
+import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.util.List;
 
@@ -20,6 +21,8 @@ public class ReviewResponseDTO {
 
     private int likes;
     private int dislikes;
+
+    @JsonInclude(JsonInclude.Include.ALWAYS)
     private TipoReaccion reaccionActualUsuario;
 
     private Long userId;

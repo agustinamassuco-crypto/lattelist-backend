@@ -204,8 +204,8 @@ public class ReviewService {
         List<LikeReview> todas = reaccionRepository.findAll();
         Usuario usuario=userService.getUsuarioAutenticado();
 
-        return reviews.stream().map(review -> {
 
+        return reviews.stream().map(review -> {
             Long reviewId = review.getId();
 
             long likes = reaccionRepository.countByReviewIdAndTipo(reviewId, TipoReaccion.LIKE);

@@ -15,8 +15,4 @@ public interface LikeReviewRepository extends JpaRepository<LikeReview, Long> {
     void deleteByUsuario_IdAndReview_Id(Long usuarioId, Long reviewId);
     Optional<LikeReview> findByUsuario_IdAndReview_Id(Long usuarioId, Long reviewId);
 
-    /*
-    Optional<LikeReview> findByUsuarioIdAndReviewId(Long userId, Long id);
-
-    void deleteByUsuarioIdAndReviewId(Long userId, Long reviewId);*/
 }

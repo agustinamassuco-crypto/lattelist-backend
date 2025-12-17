@@ -15,13 +15,13 @@ public class LatteListBackApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(LatteListBackApplication.class, args);
 	}
-/*	@Bean
+	@Bean
 	public CommandLineRunner init(CafeService cafeService) {
 		return args -> {
 			System.out.println("... Iniciando verificación de sincronización al arrancar la app ...");
 			cafeService.actualizarCafesDesdeApi();
 		};
-	}*/
+	}
 }
 
 
