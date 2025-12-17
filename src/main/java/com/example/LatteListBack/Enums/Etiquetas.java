@@ -46,5 +46,14 @@ public enum Etiquetas {
     public String getLabel() {
         return label;
     }
+
+    public static Etiquetas fromString(String texto) {
+        for (Etiquetas e : Etiquetas.values()) {
+            if (e.label.equalsIgnoreCase(texto) || e.name().equalsIgnoreCase(texto)) {
+                return e;
+            }
+        }
+        throw new IllegalArgumentException("Etiqueta no válida: " + texto);
+    }
 }
 

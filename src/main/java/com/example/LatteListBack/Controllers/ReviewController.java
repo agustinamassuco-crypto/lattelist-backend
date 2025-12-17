@@ -3,16 +3,13 @@ package com.example.LatteListBack.Controllers;
 import com.example.LatteListBack.DTOs.ReviewDTOs.ReviewRequestDTO;
 import com.example.LatteListBack.DTOs.ReviewDTOs.ReviewResponseDTO;
 import com.example.LatteListBack.Enums.TipoReaccion;
-import com.example.LatteListBack.Repositorys.UserRepository;
 import com.example.LatteListBack.Services.ReviewService;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.Principal;
 import java.util.List;
 
 @RestController
 @RequestMapping("/reviews")
-@CrossOrigin(origins = "*")
 public class ReviewController {
 
     private final ReviewService reviewService;

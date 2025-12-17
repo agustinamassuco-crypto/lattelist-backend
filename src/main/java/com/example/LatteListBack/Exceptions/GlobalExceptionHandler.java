@@ -28,6 +28,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
+
     @ExceptionHandler(LockedException.class)
     public ResponseEntity<Map<String, String>> handleLockedException(LockedException ex) {
         Map<String, String> response = new HashMap<>();
@@ -40,5 +41,13 @@ public class GlobalExceptionHandler {
         Map<String, String> response = new HashMap<>();
         response.put("message", "Credenciales inválidas.");
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Map<String, String>> handleGeneralException(Exception ex) {
+        ex.printStackTrace();
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Error interno del servidor: " + ex.getMessage());
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
 }

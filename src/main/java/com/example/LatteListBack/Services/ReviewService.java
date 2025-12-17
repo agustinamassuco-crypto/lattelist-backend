@@ -41,16 +41,15 @@ public class ReviewService {
     }
 
 
-
     public ReviewResponseDTO editarReview(Long reviewId, ReviewRequestDTO request) {
 
         Usuario usuario = userService.getUsuarioAutenticado();
 
         Review review = reviewRepository.findById(reviewId)
-                .orElseThrow(() -> new RuntimeException("Review no encontrada"));
+                .orElseThrow(() -> new IllegalArgumentException("Review no encontrada"));
 
         if (!review.getUsuario().getId().equals(usuario.getId())) {
-            throw new RuntimeException("No podés editar una review que no es tuya");
+            throw new IllegalArgumentException("No podés editar una review que no es tuya");
         }
 
         review.setComentario(request.getComentario());
@@ -62,13 +61,19 @@ public class ReviewService {
             review.setCostoPromedio(null);
         }
 
-        review.setEtiquetas(
-                request.getEtiquetas() != null
-                        ? reviewMapper.mapEtiquetas(request.getEtiquetas())
-                        : List.of()
-        );
+        //aca hice el cambio 
+        List<Etiquetas> nuevasEtiquetas = request.getEtiquetas() != null
+                ? request.getEtiquetas().stream()
+                .map(texto -> Etiquetas.fromString(texto))
+                .toList()
+                : new ArrayList<>();
 
-        review.setFotos(request.getFotos());
+        review.setEtiquetas(new ArrayList<>(nuevasEtiquetas));
+
+        List<String> nuevasFotos = request.getFotos() != null
+                ? request.getFotos()
+                : new ArrayList<>();
+        review.setFotos(new ArrayList<>(nuevasFotos));
 
         reviewRepository.save(review);
 
@@ -89,7 +94,7 @@ public class ReviewService {
         Usuario user = userService.getUsuarioAutenticado();
 
         Review review = reviewRepository.findById(reviewId)
-                .orElseThrow(() -> new RuntimeException("Review no encontrada"));
+                .orElseThrow(() -> new IllegalArgumentException("Review no encontrada"));
 
         LikeReview existente = reaccionRepository
                 .findByUsuario_IdAndReview_Id(user.getId(), reviewId)
@@ -116,7 +121,7 @@ public class ReviewService {
         Usuario user = userService.getUsuarioAutenticado();
 
         Cafe cafe = cafeRepository.findById(request.getCafeId())
-                .orElseThrow(() -> new RuntimeException("Café no encontrado"));
+                .orElseThrow(() -> new IllegalArgumentException("Café no encontrado"));
 
         Review review = reviewMapper.toEntity(request, user, cafe);
 
@@ -132,7 +137,7 @@ public class ReviewService {
     public void eliminar(Long reviewId) {
 
         Review review = reviewRepository.findById(reviewId)
-                .orElseThrow(() -> new RuntimeException("Review no encontrada"));
+                .orElseThrow(() -> new IllegalArgumentException("Review no encontrada"));
 
         review.setEstado(EstadoReview.ELIMINADA);
         reviewRepository.save(review);
@@ -154,7 +159,7 @@ public class ReviewService {
     public void desactivar(Long reviewId) {
 
         Review review = reviewRepository.findById(reviewId)
-                .orElseThrow(() -> new RuntimeException("Review no encontrada"));
+                .orElseThrow(() -> new IllegalArgumentException("Review no encontrada"));
 
         review.setEstado(EstadoReview.INACTIVA);
         reviewRepository.save(review);
@@ -163,7 +168,7 @@ public class ReviewService {
     public void activar(Long reviewId) {
 
         Review review = reviewRepository.findById(reviewId)
-                .orElseThrow(() -> new RuntimeException("Review no encontrada"));
+                .orElseThrow(() -> new IllegalArgumentException("Review no encontrada"));
 
         review.setEstado(EstadoReview.ACTIVA);
         reviewRepository.save(review);
