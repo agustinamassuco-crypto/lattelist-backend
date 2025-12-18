@@ -11,6 +11,7 @@ import com.example.LatteListBack.Models.Usuario;
 import com.example.LatteListBack.Repositorys.CafeRepository;
 import com.example.LatteListBack.Repositorys.LikeReviewRepository;
 import com.example.LatteListBack.Repositorys.ReviewRepository;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
@@ -137,7 +138,7 @@ public class ReviewService {
     public void eliminar(Long reviewId) {
 
         Review review = reviewRepository.findById(reviewId)
-                .orElseThrow(() -> new IllegalArgumentException("Review no encontrada"));
+                .orElseThrow(() -> new EntityNotFoundException("Review no encontrada"));
 
         review.setEstado(EstadoReview.ELIMINADA);
         reviewRepository.save(review);
@@ -159,7 +160,11 @@ public class ReviewService {
     public void desactivar(Long reviewId) {
 
         Review review = reviewRepository.findById(reviewId)
-                .orElseThrow(() -> new IllegalArgumentException("Review no encontrada"));
+                .orElseThrow(() -> new EntityNotFoundException("Review no encontrada"));
+
+        if (review.getEstado() == EstadoReview.ELIMINADA) {
+            throw new IllegalStateException("No se puede desactivar una reseña que ya ha sido eliminada por el usuario.");
+        }
 
         review.setEstado(EstadoReview.INACTIVA);
         reviewRepository.save(review);
@@ -168,7 +173,11 @@ public class ReviewService {
     public void activar(Long reviewId) {
 
         Review review = reviewRepository.findById(reviewId)
-                .orElseThrow(() -> new IllegalArgumentException("Review no encontrada"));
+                .orElseThrow(() -> new EntityNotFoundException("Review no encontrada"));
+
+        if (review.getEstado() == EstadoReview.ELIMINADA) {
+            throw new IllegalStateException("No se puede desactivar una reseña que ya ha sido eliminada por el usuario.");
+        }
 
         review.setEstado(EstadoReview.ACTIVA);
         reviewRepository.save(review);
@@ -176,7 +185,7 @@ public class ReviewService {
 
     public List<ReviewResponseDTO> getByCafeId(Long cafeId) {
         Usuario usuario=userService.getUsuarioAutenticado();
-        List<Review> reviews=new ArrayList<Review>();
+        List<Review> reviews= new ArrayList<Review>();
         if(usuario.getTipoDeUsuario() == TipoDeUsuario.CLIENTE && usuario.getEstado() == EstadoUsuario.ACTIVO) {
             reviews=reviewRepository.findReviewsVisiblesPorCafe(cafeId);
         }else{

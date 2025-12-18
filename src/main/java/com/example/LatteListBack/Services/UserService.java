@@ -120,13 +120,6 @@ public class UserService {
 
 
 
-  /*  public Long contarAdminsActivos() {
-        return userRepository.countByTipoDeUsuarioAndEstado(
-                TipoDeUsuario.ADMIN,
-                EstadoUsuario.ACTIVO
-        );
-    }*/
-
 
 
     public void solicitarRecuperacion(String email) {
